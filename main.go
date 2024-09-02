@@ -19,7 +19,9 @@ func main() {
 	})
 
 	entries := random(logger, size)
-	mockInfoLogs(entries)
+
+	go mockInfoLogs(entries)
+	select {}
 }
 
 func random(logger *logrus.Logger, size int) (entries []*logrus.Entry) {
