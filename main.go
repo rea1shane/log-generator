@@ -20,7 +20,7 @@ func main() {
 
 	entries := prepare(logger, size)
 
-	go mockWrittenBytes(entries)
+	go mockInfo1(entries)
 	select {}
 }
 
@@ -36,7 +36,7 @@ func prepare(logger *logrus.Logger, size int) (entries []*logrus.Entry) {
 	return
 }
 
-func mockWrittenBytes(entries []*logrus.Entry) {
+func mockInfo1(entries []*logrus.Entry) {
 	for {
 		index := randomdata.Number(0, len(entries))
 		entries[index].
