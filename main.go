@@ -20,7 +20,7 @@ func main() {
 
 	entries := random(logger, size)
 
-	go mockInfoLogs(entries)
+	go mockWrittenBytes(entries)
 	select {}
 }
 
@@ -36,10 +36,12 @@ func random(logger *logrus.Logger, size int) (entries []*logrus.Entry) {
 	return
 }
 
-func mockInfoLogs(entries []*logrus.Entry) {
+func mockWrittenBytes(entries []*logrus.Entry) {
 	for {
 		index := randomdata.Number(0, len(entries))
-		entries[index].Infof("written bytes: %d", randomdata.Number(0, 1024*1024))
+		entries[index].
+			WithField("written", randomdata.Number(1, 1024*1024)).
+			Info("finished transferring logs")
 		time.Sleep(time.Duration(randomdata.Number(1000*1000, 1000*1000*1000)))
 	}
 }
