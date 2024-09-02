@@ -16,6 +16,9 @@ func main() {
 	logger.SetFormatter(&logrus.TextFormatter{
 		DisableColors: true,
 		FullTimestamp: true,
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime: "ts",
+		},
 	})
 
 	entries := prepare(logger, size)
