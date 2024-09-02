@@ -18,13 +18,13 @@ func main() {
 		FullTimestamp: true,
 	})
 
-	entries := random(logger, size)
+	entries := prepare(logger, size)
 
 	go mockWrittenBytes(entries)
 	select {}
 }
 
-func random(logger *logrus.Logger, size int) (entries []*logrus.Entry) {
+func prepare(logger *logrus.Logger, size int) (entries []*logrus.Entry) {
 	for i := 0; i < size; i++ {
 		profile := randomdata.GenerateProfile(randomdata.Male | randomdata.Female | randomdata.RandomGender)
 		entry := logger.WithFields(map[string]interface{}{
