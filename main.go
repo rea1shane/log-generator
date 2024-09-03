@@ -12,8 +12,8 @@ const (
 )
 
 func main() {
-	logger := logrus.New()
-	logger.SetFormatter(&logrus.TextFormatter{
+	logfmtLogger := logrus.New()
+	logfmtLogger.SetFormatter(&logrus.TextFormatter{
 		DisableColors: true,
 		FullTimestamp: true,
 		FieldMap: logrus.FieldMap{
@@ -21,9 +21,9 @@ func main() {
 		},
 	})
 
-	entries := prepare(logger, size)
+	logfmtEntries := prepare(logfmtLogger, size)
 
-	go info1(entries)
+	go info1(logfmtEntries)
 	select {}
 }
 
