@@ -4,6 +4,7 @@ go 1.23.0
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
+	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/sirupsen/logrus v1.9.3
 )
 

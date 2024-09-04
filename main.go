@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Pallinder/go-randomdata"
+	"github.com/antonfisher/nested-logrus-formatter"
 	"github.com/sirupsen/logrus"
 )
 
@@ -12,6 +13,13 @@ const (
 )
 
 func main() {
+	defaultLogger := logrus.New()
+	defaultLogger.SetFormatter(&formatter.Formatter{
+		TimestampFormat: "2006-01-02 | 15:04:05",
+		HideKeys:        true,
+	})
+	defultEntries := prepare(defaultLogger, size)
+
 	logfmtLogger := logrus.New()
 	logfmtLogger.SetFormatter(&logrus.TextFormatter{
 		DisableColors: true,
@@ -21,11 +29,16 @@ func main() {
 		},
 		TimestampFormat: time.RFC3339Nano,
 	})
-
 	logfmtEntries := prepare(logfmtLogger, size)
 
-	go info1(logfmtEntries)  // Data uploaded in past 15s: sum_over_time({container_name="log-generator"} |= "finished uploading" | logfmt bytes | unwrap bytes [15s])
-	go error1(logfmtEntries) // Error count in past 1m: count_over_time({container_name="log-generator"} |= "error occurred in worker" | logfmt worker, error_type [1m])
+	// Data uploaded in past 15s: sum_over_time({container_name="log-generator"} |= "finished uploading" | logfmt bytes | unwrap bytes [15s])
+	go info1(logfmtEntries)
+	// Status from pending to running in past 1m in each host: sum by (host_name, host_ip) (count_over_time({container_name="log-generator"} |= "status updated" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>status updated from <before> to <after>\n" | before="pending" | after="running" [1m]))
+	// Status from running to paused in past 1m in each host: sum by (host_name, host_ip) (count_over_time({container_name="log-generator"} |= "status updated" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>status updated from <before> to <after>\n" | before="running" | after="paused" [1m]))
+	// Status from paused to running in past 1m in each host: sum by (host_name, host_ip) (count_over_time({container_name="log-generator"} |= "status updated" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>status updated from <before> to <after>\n" | before="paused" | after="running" [1m]))
+	go info2(defultEntries)
+	// Error count in past 1m: count_over_time({container_name="log-generator"} |= "error occurred in worker" | logfmt worker, error_type [1m])
+	go error1(logfmtEntries)
 	select {}
 }
 
@@ -50,6 +63,18 @@ func info1(entries []*logrus.Entry) {
 				"bytes":  randomdata.Number(1, 1024*1024),
 			}).
 			Info("finished uploading")
+		time.Sleep(time.Duration(randomdata.Number(1000*1000, 1000*1000*1000)))
+	}
+}
+
+func info2(entries []*logrus.Entry) {
+	for {
+		index := randomdata.Number(0, len(entries))
+		entries[index].Infof(
+			"status updated from %s to %s",
+			randomdata.StringSample("pending", "running", "paused"),
+			randomdata.StringSample("pending", "running", "paused"),
+		)
 		time.Sleep(time.Duration(randomdata.Number(1000*1000, 1000*1000*1000)))
 	}
 }
