@@ -41,6 +41,7 @@ func prepare(logger *logrus.Logger, size int) (entries []*logrus.Entry) {
 	return
 }
 
+// Data uploaded in past 15s: sum_over_time({container_name="log-generator"} |= "finished uploading" | logfmt bytes | unwrap bytes [15s])
 func info1(entries []*logrus.Entry) {
 	for {
 		index := randomdata.Number(0, len(entries))
@@ -53,6 +54,7 @@ func info1(entries []*logrus.Entry) {
 	}
 }
 
+// Error count in past 1m: count_over_time({container_name="log-generator"} |= "error occurred in worker" | logfmt worker, error_type [1m])
 func error1(entries []*logrus.Entry) {
 	for {
 		index := randomdata.Number(0, len(entries))
