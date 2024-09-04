@@ -25,6 +25,7 @@ func main() {
 	logfmtEntries := prepare(logfmtLogger, size)
 
 	go info1(logfmtEntries)
+	go error1(logfmtEntries)
 	select {}
 }
 
@@ -44,8 +45,23 @@ func info1(entries []*logrus.Entry) {
 	for {
 		index := randomdata.Number(0, len(entries))
 		entries[index].
-			WithField("bytes", randomdata.Number(1, 1024*1024)).
+			WithFields(map[string]interface{}{
+				"bytes": randomdata.Number(1, 1024*1024),
+			}).
 			Info("finished uploading")
 		time.Sleep(time.Duration(randomdata.Number(1000*1000, 1000*1000*1000)))
+	}
+}
+
+func error1(entries []*logrus.Entry) {
+	for {
+		index := randomdata.Number(0, len(entries))
+		entries[index].
+			WithFields(map[string]interface{}{
+				"worker":     randomdata.Number(0, 10),
+				"error_type": randomdata.StringSample("network", "core", "disk", "unknown"),
+			}).
+			Error("error occurred in worker")
+		time.Sleep(time.Duration(randomdata.Number(10*1000*1000, 10*1000*1000*1000)))
 	}
 }
