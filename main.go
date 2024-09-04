@@ -46,7 +46,8 @@ func info1(entries []*logrus.Entry) {
 		index := randomdata.Number(0, len(entries))
 		entries[index].
 			WithFields(map[string]interface{}{
-				"bytes": randomdata.Number(1, 1024*1024),
+				"worker": randomdata.Number(0, 10),
+				"bytes":  randomdata.Number(1, 1024*1024),
 			}).
 			Info("finished uploading")
 		time.Sleep(time.Duration(randomdata.Number(1000*1000, 1000*1000*1000)))
