@@ -37,6 +37,8 @@ func main() {
 	// Status from running to paused in past 1m in each host: sum by (host_name, host_ip) (count_over_time({container_name="log-generator"} |= "status updated" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>status updated from <before> to <after>\n" | before="running" | after="paused" [1m]))
 	// Status from paused to running in past 1m in each host: sum by (host_name, host_ip) (count_over_time({container_name="log-generator"} |= "status updated" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>status updated from <before> to <after>\n" | before="paused" | after="running" [1m]))
 	go info2(defultEntries)
+	// Worker current status in last 15s: last_over_time({container_name="log-generator"} |= "current status" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>worker <worker> current status is <status>\n" | label_format status = `{{ regexReplaceAll "running" .status "1" }}` | label_format status = `{{ regexReplaceAll "paused" .status "0.5" }}` | unwrap status [15s])
+	go info3(defultEntries)
 	// Error count in past 1m: count_over_time({container_name="log-generator"} |= "error occurred in worker" | logfmt worker, error_type [1m])
 	go error1(logfmtEntries)
 	select {}
@@ -74,6 +76,18 @@ func info2(entries []*logrus.Entry) {
 			"status updated from %s to %s",
 			randomdata.StringSample("pending", "running", "paused"),
 			randomdata.StringSample("pending", "running", "paused"),
+		)
+		time.Sleep(time.Duration(randomdata.Number(1000*1000, 1000*1000*1000)))
+	}
+}
+
+func info3(entries []*logrus.Entry) {
+	for {
+		index := randomdata.Number(0, len(entries))
+		entries[index].Infof(
+			"worker %d current status is %s",
+			randomdata.Number(0, 10),
+			randomdata.StringSample("running", "paused"),
 		)
 		time.Sleep(time.Duration(randomdata.Number(1000*1000, 1000*1000*1000)))
 	}
