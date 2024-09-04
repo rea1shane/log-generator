@@ -19,6 +19,7 @@ func main() {
 		FieldMap: logrus.FieldMap{
 			logrus.FieldKeyTime: "ts",
 		},
+		TimestampFormat: time.RFC3339Nano, // RFC3339 or ISO8601: https://www.xiaobo.li/notes/archives/2699
 	})
 
 	logfmtEntries := prepare(logfmtLogger, size)
