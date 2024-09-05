@@ -33,14 +33,21 @@ func main() {
 
 	// Data uploaded in past 15s: sum_over_time({container_name="log-generator"} |= "finished uploading" | logfmt bytes | unwrap bytes [15s])
 	go info1(logfmtEntries)
+
 	// Status from pending to running in past 1m in each host: sum by (host_name, host_ip) (count_over_time({container_name="log-generator"} |= "status updated" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>status updated from <before> to <after>\n" | before="pending" | after="running" [1m]))
 	// Status from running to paused in past 1m in each host: sum by (host_name, host_ip) (count_over_time({container_name="log-generator"} |= "status updated" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>status updated from <before> to <after>\n" | before="running" | after="paused" [1m]))
 	// Status from paused to running in past 1m in each host: sum by (host_name, host_ip) (count_over_time({container_name="log-generator"} |= "status updated" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>status updated from <before> to <after>\n" | before="paused" | after="running" [1m]))
 	go info2(defultEntries)
+
 	// Worker current status in last 15s: last_over_time({container_name="log-generator"} |= "current status" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>worker <worker> current status is <status>\n" | label_format status = `{{ regexReplaceAll "running" .status "1" }}` | label_format status = `{{ regexReplaceAll "paused" .status "0.5" }}` | unwrap status [15s])
 	go info3(defultEntries)
+
+	// Tasks has done: last_over_time({container_name="log-generator"} |= "task(s)" | pattern "<_> [<_>] [<job_name>] [<job_uuid>]<_>current <completed> task" | unwrap completed [15s])
+	go info4(defultEntries)
+
 	// Error count in past 1m: count_over_time({container_name="log-generator"} |= "error occurred in worker" | logfmt worker, error_type [1m])
 	go error1(logfmtEntries)
+
 	select {}
 }
 
@@ -89,6 +96,16 @@ func info3(entries []*logrus.Entry) {
 			randomdata.Number(0, 10),
 			randomdata.StringSample("running", "paused"),
 		)
+		time.Sleep(time.Duration(randomdata.Number(1000*1000, 1000*1000*1000)))
+	}
+}
+
+func info4(entries []*logrus.Entry) {
+	m := make(map[*logrus.Entry]int)
+	for {
+		index := randomdata.Number(0, len(entries))
+		m[entries[index]] += randomdata.Number(0, 10)
+		entries[index].Infof("current %d task(s) completed", m[entries[index]])
 		time.Sleep(time.Duration(randomdata.Number(1000*1000, 1000*1000*1000)))
 	}
 }
