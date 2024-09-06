@@ -1,6 +1,6 @@
 Should:
 
-- No colorful log
+- No colorful log.
 
 Required Fields:
 
