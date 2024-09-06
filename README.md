@@ -1,6 +1,8 @@
 Should:
 
-- No colorful log.
+- Disable colorful.
+- Selectively output.
+- With context.
 
 Required Fields:
 
